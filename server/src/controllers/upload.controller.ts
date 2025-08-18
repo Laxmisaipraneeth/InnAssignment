@@ -8,6 +8,8 @@ export const handleUpload = async (req: Request, res: Response) => {
     console.log('FILES:', req.files);
 
     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    const profilePicFile = files['profilePic']?.[0];
+    const kycDocFile = files['kycDoc']?.[0];
 
     const {
       fullName,
@@ -22,21 +24,9 @@ export const handleUpload = async (req: Request, res: Response) => {
       kycDocName
     } = req.body;
 
-
-    const profilePicFile = files['profilePic']?.[0];
-    const kycDocFile = files['kycDoc']?.[0];
-
-
-    if (!fullName || !gender || !serviceType || !orgName) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
-
-    if (!kycDocFile) {
-      return res.status(400).json({ error: 'Missing required KYC document' });
-    }
-
     const uniqueECode = await generateUniqueECode();
+
+    
 
     const helperData: any = {
       eCode: uniqueECode,
@@ -44,7 +34,7 @@ export const handleUpload = async (req: Request, res: Response) => {
       gender,
       phone,
       email,
-      languages: typeof languages === 'string' ? JSON.parse(languages) : languages,
+      languages: JSON.parse(languages),
       serviceType,
       orgName,
       vehicleType,

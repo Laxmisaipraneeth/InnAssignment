@@ -114,7 +114,7 @@
                     <section class="phone-input-wrapper">
                         <p>Phone*</p>
                         <mat-form-field appearance="outline">
-                            <input matInput type="tel" formControlName="phone">
+                            <input matInput type="tel" (keypress)="validateNumber($event)" formControlName="phone">
                             <mat-error *ngIf="profileForm.get('phone')?.hasError('required') && profileForm.get('phone')?.touched">
                                 This field is mandatory.
                             </mat-error>

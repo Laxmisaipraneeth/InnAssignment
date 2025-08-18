@@ -144,6 +144,13 @@ export class EditComponent implements OnInit, OnDestroy {
       this.kycFileName = '';
     }
   }
+  validateNumber(event:KeyboardEvent):void{
+    if(this.profileForm.get('phone')?.value?.length==10) return;
+    const isDigit = /^[0-9]$/.test(event.key);
+    if(!isDigit){
+      event.preventDefault()
+    }
+  }
 
   onPhotoSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];

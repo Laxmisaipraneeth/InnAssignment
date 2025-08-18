@@ -11,7 +11,7 @@ import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { Router } from '@angular/router';
 import { SERVICES, LANGUAGES, COUNTRY_CODES, VEHICLES } from '../constants/data.constants';
 
-import { HelperStoreService } from '../helper-store.service'; 
+import { HelperStoreService } from '../helper-store.service';
 
 @Component({
   selector: 'app-helper',
@@ -68,6 +68,14 @@ export class HelperComponent implements OnInit, OnDestroy {
   additionalFormGroup = new FormGroup({
     otherDocs: new FormControl<File | null>(null)
   });
+
+  validateNumber(event: KeyboardEvent): void {
+    if (this.profileForm.get('phone')?.value?.length == 10) return;
+    const isDigit = /^[0-9]$/.test(event.key);
+    if (!isDigit) {
+      event.preventDefault()
+    }
+  }
 
   ngOnInit(): void {
   }
