@@ -1,0 +1,225 @@
+.total-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+.head-wrapper {
+    flex-shrink: 0;
+    cursor: pointer;
+    padding: 10px 0px 0px 42px;
+    display: flex;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+
+    p {
+        display: inline;
+    }
+}
+
+.body-wrapper {
+    display: flex;
+    align-items: flex-start;
+    padding: 0px 0px 0px 33px;
+    margin-left: 1%;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.left-section {
+    width: 260px;
+    background-color: #fafafa;
+    border-radius: 8px;
+    border: 2px solid #ccc;
+    padding: 0px 0px 0px 40px;
+    margin-right: 1.5rem;
+    flex-shrink: 0;
+    height: 85vh;
+    position: sticky;
+    top: 20px;
+    align-self: flex-start;
+}
+
+.right-section {
+    flex: 1;
+    min-height: 0;
+    padding: 0 3rem 3rem 1rem;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: visible;
+}
+
+
+.form-wrapper {
+    display: grid;
+    gap: 1.5rem;
+
+    .upload-image {
+        height: 150px;
+        width: 150px;
+        background-color: rgb(223, 221, 241);
+        border: 2px dashed rgb(150, 141, 251);
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: rgb(213, 211, 241);
+            border-color: rgb(120, 111, 241);
+        }
+
+        .profile-pic-preview {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    }
+
+    .material-symbols-outlined {
+        color: rgb(150, 141, 251);
+        font-size: 36px;
+    }
+
+    .img-text {
+        color: rgb(150, 141, 251);
+        margin-top: 4px;
+        font-size: 14px;
+    }
+}
+
+.kyc-wrapper {
+    .kyc-upload {
+        height: 120px;
+        width: 170px;
+        background-color: rgb(223, 221, 241);
+        border: 2px dashed rgb(150, 141, 251);
+        border-radius: 5%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+            background-color: rgb(213, 211, 241);
+            border-color: rgb(120, 111, 241);
+        }
+    }
+}
+
+.btn-wrapper {
+    display: flex;
+    justify-content: flex-end;
+    padding: 10px;
+    margin-top: 60px;
+
+    .btn {
+        background-color: #303f9f;
+        color: white;
+        padding: 10px 20px;
+        font-size: small;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: #333;
+        }
+    }
+}
+
+.service-wrapper,
+.organization-selector-wrapper,
+.full-name-wrapper,
+.languages-dropdown-wrapper,
+.gender-selector-wrapper,
+.phone-input-wrapper,
+.email-input-wrapper,
+.vehicle-selector-wrapper,
+.vehicle-input-wrapper {
+    width: 100%;
+}
+
+mat-form-field {
+    width: 100%;
+}
+
+.upload-image.preview {
+    cursor: pointer;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid #7a76d9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-pic-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.file-preview-card {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  width: 280px;
+  box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+  .file-icon {
+    color: #e53935; 
+    font-size: 40px;
+    margin-right: 12px;
+  }
+
+  .file-info {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-width: 0;
+
+    .file-name {
+      font-weight: 500;
+      color: #212529;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .file-size {
+      font-size: 13px;
+      color: #6c757d;
+    }
+  }
+
+  .replace-icon {
+    font-size: 24px;
+    color: #6c757d;
+    cursor: pointer;
+    margin-left: 12px;
+    transition: color 0.2s ease-in-out;
+
+    &:hover {
+      color: #212529;
+    }
+  }
+}

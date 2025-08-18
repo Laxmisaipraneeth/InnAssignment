@@ -1,0 +1,155 @@
+* {
+    background-color: rgb(208, 208, 208);
+}
+.id-container{
+    padding: 10px;
+    border-radius:4px;
+    
+}
+
+.header{
+    display: flex;
+    justify-content: space-between;
+    padding: 1vh;
+}
+
+.profile-img {
+    border: 2px dashed rgb(145, 145, 145);
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+}
+
+h5 {
+    margin: 0px;
+    padding-left: 5px;
+}
+
+.content-wrapper {
+    display: flex;
+    justify-content: center;
+    gap: 2vw;
+    padding-left: 5px;
+}
+
+.item-1 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 5px 0px 5px;
+}
+
+.item-1>* {
+    margin:0px;
+    margin-bottom: 11px;
+}
+
+.item-2>* {
+    padding-bottom: 15px;
+}
+
+.item-2 {
+    display: grid;
+    // flex: 1;
+    border: 1px dashed rgb(145, 145, 145);
+    grid-template-rows: auto auto auto;
+    padding: 0px 5px 0px 5px;
+
+    .section-1 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 15px;
+
+        .right-section {
+            display: flex;
+            justify-content: space-between;
+
+            .inner-left {
+                padding-top: 3px;
+                border: 3px dashed rgb(255, 81, 0);
+                border-radius: 50%;
+                min-width: 30px;
+                min-height: 30px;
+            }
+
+            .inner-right {
+                div{
+                    margin-right: 10px;
+                }
+                p {
+                    margin: 0px;
+                }
+            }
+        }
+
+    }
+
+    .section-2 {
+        border: none;
+        border-collapse: collapse;
+
+        table {
+            width: 100%;
+            font-size: 14px;
+
+        }
+
+    }
+
+    .section-3 {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+
+        p {
+            max-width: 200px;
+            font-size: 12px;
+        }
+    }
+}
+
+.items{
+    width: 250px;
+    border: 1px dashed rgb(145, 145, 145);
+}
+
+.print-wrapper{
+    display: flex;
+    justify-content: flex-end;
+    button{
+        display: flex;
+        align-items: center;
+        border: none;
+        margin: 10px;
+        border-radius: 5px;
+        padding: 5px 10px;
+        gap: 5px;
+        span{
+            background-color: transparent;
+        }
+    }
+    button:nth-child(1){
+        background-color: rgb(245, 245, 245);
+    }
+    button:nth-child(2){
+        background-color: rgb(91, 91, 234);
+        color: white;
+    }
+}
+.qr-code{
+    height: 100px;
+    width: 100px;
+}
+
+@media print{
+    body *{
+        visibility:hidden;
+    }
+    #sel-for-canvas{
+        visibility:visible;
+    }
+}

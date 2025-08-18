@@ -1,0 +1,312 @@
+<div (click)="goToDashboard()" class="upper-arrow">
+    <span class="material-symbols-outlined">
+        arrow_back_ios
+    </span>
+    <p>Add Helper</p>
+</div>
+
+<div class="content-wrapper">
+    <div>
+
+    </div>
+    <div class="stepper-wrapper">
+        <mat-vertical-stepper #stepper [linear]="false">
+            <mat-step [stepControl]="profileForm">
+                <ng-template matStepLabel>
+                    <div class="step-label-wrapper">
+                        <div class="step-title">Helper Details</div>
+                        <div class="step-description">Add and manage helper info</div>
+                    </div>
+                </ng-template>
+            </mat-step>
+            <mat-step [stepControl]="additionalFormGroup">
+                <ng-template matStepLabel>
+                    <div class="step-label-wrapper">
+                        <div class="step-title">Documents</div>
+                        <div class="step-description">Upload related documents</div>
+                    </div>
+                </ng-template>
+            </mat-step>
+            <mat-step>
+                <ng-template matStepLabel>
+                    <div class="step-label-wrapper">
+                        <div class="step-title">Review</div>
+                        <div class="step-description">Check the information and confirm</div>
+                    </div>
+                </ng-template>
+            </mat-step>
+        </mat-vertical-stepper>
+    </div>
+
+
+    <div class="step-content">
+
+        <ng-container [ngSwitch]="stepper.selectedIndex">
+            <form *ngSwitchCase="0" [formGroup]="profileForm">
+                <header>
+                    <h2>Helper Details</h2>
+                    <p style="color: rgb(66, 63, 63);">Track, Add and Manage all your helpers at one place</p>
+                </header>
+                <div class="form-wrapper">
+
+                    <section class="upload-image-wrapper">
+                        <div class="upload-image" (click)="handlePhotoUploadClick($event)">
+                            <ng-container *ngIf="imgSrc; else uploadPlaceholder">
+                                <img [src]="imgSrc" alt="Profile Preview" class="profile-preview-image">
+                            </ng-container>
+
+                            <ng-template #uploadPlaceholder>
+                                <span class="material-symbols-outlined">cloud_upload</span>
+                                <div class="img-text">Upload Photo</div>
+                            </ng-template>
+                        </div>
+                        <p *ngIf="photoFileName">{{photoFileName}}</p>
+                        <input type="file" #photoInput accept=".png,.jpeg,.jpg" (change)="onPhotoSelected($event)"
+                            style="display:none;">
+                        <p>Upload photo (.png, .jpeg) size 5 MB</p>
+                    </section>
+
+
+                    <section class="service-wrapper" style="color: black; font-size: medium;">
+                        <p>Type of Service*</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="serviceType" disableRipple panelClass="service-panel-class">
+                                <mat-option>
+                                    <label for="searchBox">Search type of service</label>
+                                    <input id="searchBox" type="text" matInput placeholder="Search service"
+                                        [(ngModel)]="serviceSearch" [ngModelOptions]="{ standalone: true }"
+                                        (click)="$event.stopPropagation()" />
+                                </mat-option>
+                                <mat-option *ngFor="let service of filteredServices()"
+                                    [value]="service">{{service}}</mat-option>
+                            </mat-select>
+                            <mat-error
+                                *ngIf="profileForm.get('serviceType')?.hasError('required') && profileForm.get('serviceType')?.touched">This
+                                field is mandatory.</mat-error>
+                        </mat-form-field>
+                    </section>
+
+
+                    <section class="organization-selector-wrapper">
+                        <p>Organization Name*</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="orgName" placeholder="Organization Name">
+                                <mat-option value="ASBL">ASBL</mat-option>
+                                <mat-option value="Springers Helpers">Springers Helpers</mat-option>
+                            </mat-select>
+                            <mat-error
+                                *ngIf="profileForm.get('orgName')?.hasError('required') && profileForm.get('orgName')?.touched">This
+                                field is mandatory.</mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="full-name-wrapper">
+                        <p>Full Name*</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="text" formControlName="fullName" placeholder="Full Name">
+                            <mat-error
+                                *ngIf="profileForm.get('fullName')?.hasError('required') && profileForm.get('fullName')?.touched">This
+                                field is mandatory.</mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="languages-dropdown-wrapper">
+                        <p>Languages*</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="languages" placeholder="Languages" multiple disableRipple>
+                                <mat-select-trigger>
+                                    {{
+                                    selectedLanguages.length > 0
+                                    ? selectedLanguages[0] +
+                                    (selectedLanguages.length > 1
+                                    ? ' +' + (selectedLanguages.length - 1)
+                                    : '')
+                                    : 'Languages'
+                                    }}
+                                </mat-select-trigger>
+                                <mat-option *ngFor="let lang of languagesList" [value]="lang">{{ lang }}</mat-option>
+                            </mat-select>
+                            <mat-error
+                                *ngIf="profileForm.get('languages')?.hasError('invalidLanguageCount') && profileForm.get('languages')?.touched">
+                                Select at least 1 and at most 3 languages.
+                            </mat-error>
+
+                        </mat-form-field>
+                    </section>
+
+                    <section class="gender-selector-wrapper">
+                        <p>Gender*</p>
+                        <mat-radio-group formControlName="gender" aria-label="Select an option">
+                            <mat-radio-button value="male">Male</mat-radio-button>
+                            <mat-radio-button value="female">Female</mat-radio-button>
+                            <mat-radio-button value="other">Other</mat-radio-button>
+                        </mat-radio-group>
+                        <mat-error
+                            *ngIf="profileForm.get('gender')?.hasError('required') && profileForm.get('gender')?.touched">
+                            Please select a gender.
+                        </mat-error>
+                    </section>
+
+                    <section class="phone-input-wrapper">
+                        <p>Phone*</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="tel" formControlName="phone">
+                            <mat-error
+                                *ngIf="profileForm.get('phone')?.hasError('required') && profileForm.get('phone')?.touched">This
+                                field is mandatory.</mat-error>
+                            <mat-error
+                                *ngIf="profileForm.get('phone')?.hasError('pattern') && profileForm.get('phone')?.touched">Please
+                                enter a valid 10-digit number.</mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="email-input-wrapper">
+                        <p>Email</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="email" formControlName="email" placeholder="example@abc.com">
+                            <mat-error
+                                *ngIf="profileForm.get('email')?.hasError('pattern') && profileForm.get('email')?.touched">Please
+                                enter a valid email.</mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="vehicle-selector-wrapper">
+                        <p>Choose Vehicle Type</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="vehicleType" disableRipple placeholder="None">
+                                <mat-option *ngFor="let vehicle of vehicles" [value]="vehicle">{{vehicle}}</mat-option>
+                            </mat-select>
+                            <mat-error
+                                *ngIf="profileForm.get('vehicleType')?.hasError('required') && profileForm.get('vehicleType')?.touched">
+                                This field is mandatory.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section *ngIf="profileForm.get('vehicleType')?.value!=='None'" class="vehicle-input-wrapper">
+                        <p>Vehicle Number*</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="text" formControlName="vehicleNumber" placeholder="TG01AB1234">
+                        </mat-form-field>
+                    </section>
+
+                    <section class="kyc-wrapper">
+                        <p>KYC Document*</p>
+                        
+
+                        <div *ngIf="selectedKycFile; else showUploadBox" class="file-preview-card">
+                            <span class="material-symbols-outlined file-icon">picture_as_pdf</span>
+                            <div class="file-info">
+                                <span class="file-name" [title]="selectedKycFile.name">{{ selectedKycFile.name }}</span>
+                                <span class="file-size">{{ formatFileSize(selectedKycFile.size) }}</span>
+                            </div>
+                            <span class="material-symbols-outlined replace-icon" (click)="handleKycUploadClick($event)">refresh</span>
+                        </div>
+
+   
+                        <ng-template #showUploadBox>
+                            <div class="kyc-upload" (click)="handleKycUploadClick($event)">
+                                <span class="material-symbols-outlined">add_2</span>
+                            </div>
+                        </ng-template>
+
+                        <input type="file" #kycInput accept=".pdf,.jpeg,.jpg,.png" (change)="onKycFileSelected($event)"
+                            style="display: none;">
+
+                        <mat-error *ngIf="profileForm.get('kycDoc')?.hasError('required') && profileForm.get('kycDoc')?.touched">
+                            This field is mandatory.
+                        </mat-error>
+                    </section>
+
+                    <div class="btn-wrapper">
+                        
+                        <button class="btn" type="button" (click)="goToNextStep(stepper,'first')">Next ></button>
+                    </div>
+                </div>
+            </form>
+
+            <form *ngSwitchCase="1" [formGroup]="additionalFormGroup">
+                <section class="kyc-wrapper">
+                    <p>Additional Documents</p>
+                    <div class="kyc-upload">
+                        <span class="material-symbols-outlined">add_2</span>
+                    </div>
+                    <div class="line-wrapper" style="padding-top: 20px;padding-bottom:20px;border:none;">
+                        <hr>
+                    </div>
+
+                    <div class="btn-wrapper">
+                        <button class="btn" type="button" (click)="stepper.previous()">
+                            Previous
+                        </button>
+                        <button class="btn" type="button" (click)="goToNextStep(stepper,'first')">Next ></button>
+                    </div>
+                </section>
+            </form>
+
+            <div *ngSwitchCase="2" class="review-details-container">
+                <div class="details-card">
+                    <header class="details-header">
+                        <div class="profile-picture-container">
+                            <ng-container *ngIf="imgSrc; else noImg">
+                                <img [src]="imgSrc" alt="Profile Picture" class="profile-picture" />
+                            </ng-container>
+                            <ng-template #noImg>
+                                <div class="fallback-avatar">
+                                    {{ profileForm.get('fullName')?.value?.[0] || '?' }}
+                                </div>
+                            </ng-template>
+                        </div>
+
+                        <div class="name-container">
+                            <h1 class="name">{{ profileForm.get('fullName')?.value || 'Unnamed' }}</h1>
+                            <p class="service-type">{{ profileForm.get('serviceType')?.value || 'N/A' }}</p>
+                        </div>
+                    </header>
+
+                    <section class="details-section">
+                        <h2 class="section-title">PERSONAL DETAILS</h2>
+                        <div class="details-grid">
+                            <div class="detail-label">Gender</div>
+                            <div class="detail-value">{{ profileForm.get('gender')?.value || '-' }}</div>
+
+                            <div class="detail-label">Languages</div>
+                            <div class="detail-value">{{ (profileForm.get('languages')?.value || []).join(', ') }}</div>
+
+                            <div class="detail-label">Mobile No.</div>
+                            <div class="detail-value">{{ profileForm.get('phone')?.value || '-' }}</div>
+
+                            <div class="detail-label">Email ID</div>
+                            <div class="detail-value">{{ profileForm.get('email')?.value || '-' }}</div>
+
+                            <div class="detail-label">KYC Document</div>
+                            <div class="detail-value kyc-document">
+                                <div>
+                                    <span class="view-button" (click)="previewKycFile($event)">view</span>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="details-section">
+                        <h2 class="section-title">SERVICE DETAILS</h2>
+                        <div class="details-grid">
+                            <div class="detail-label">Type</div>
+                            <div class="detail-value">{{ profileForm.get('serviceType')?.value || '-' }}</div>
+
+                            <div class="detail-label">Organization</div>
+                            <div class="detail-value">{{ profileForm.get('orgName')?.value || '-' }}</div>
+                        </div>
+                    </section>
+                </div>
+                <div class="btn-wrapper">
+                    <button class="btn" type="button" (click)="stepper.previous()">
+                            Previous
+                        </button>
+                    <button class="btn" (click)="submitForm()"> + Add Helper</button>
+                </div>
+            </div>
+
+        </ng-container>
+    </div>
+</div>

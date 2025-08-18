@@ -1,0 +1,238 @@
+<div class="header-wrapper">
+  <p style="font-size: 20px;">Helpers</p>
+  <div>
+    <span class="material-symbols-outlined">more_vert</span>
+  </div>
+</div>
+
+<div class="content-wrapper">
+  <div class="icons-wrapper">
+    <div class="left-part">
+
+      <div class="sort-container">
+        <p class="material-symbols-outlined left-part-icons" (click)="toggleSort($event)">swap_vert</p>
+        <div *ngIf="isSortVisible" class="sort-dialog" (click)="$event.stopPropagation()">
+          <div class="sort-header">Sort by</div>
+          <div class="sort-option" [class.active]="activeSortKey === 'name'" (click)="doSomeSorting('name')">
+            <span>Helpers Name (A-Z)</span>
+            <span *ngIf="activeSortKey === 'name'" class="material-symbols-outlined">check</span>
+          </div>
+          <div class="sort-option" [class.active]="activeSortKey === 'eCode'" (click)="doSomeSorting('eCode')">
+            <span>Employee ID</span>
+            <span *ngIf="activeSortKey === 'eCode'" class="material-symbols-outlined">check</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-container">
+        <p class="material-symbols-outlined left-part-icons" (click)="toggleFilter($event)">filter_alt</p>
+        <div *ngIf="isFilterVisible" class="filter-dialog" (click)="$event.stopPropagation()">
+          <div class="filter-header">
+            <span>Filter By</span>
+          </div>
+          <div class="filter-body">
+            <div class="filter-item">
+              <div class="filter-item-header">
+                <label>Service</label>
+                <button *ngIf="filterServices.length>0" class="reset-link"
+                  (click)="resetServiceFilter($event)">Reset</button>
+              </div>
+              <mat-select multiple [(ngModel)]="filterServices" placeholder="Select Service"
+                panelClass="custom-select-panel">
+                <mat-select-trigger>
+                  {{ filterServices.length > 0 ? filterServices.join(', ') : 'Select Service' }}
+                </mat-select-trigger>
+                <div class="filter-select-panel">
+                  <input class="filter-search-input" [(ngModel)]="serviceSearch" placeholder="search"
+                    (click)="$event.stopPropagation()">
+                  <mat-checkbox class="select-all-checkbox"
+                    [checked]="filterServices.length === servicesList.length && servicesList.length > 0"
+                    (change)="toggleSelectAll('service')">
+                    Select All ({{servicesList.length}})
+                  </mat-checkbox>
+                </div>
+                <mat-option *ngFor="let service of servicesList" [value]="service">
+                  {{ service }}
+                </mat-option>
+              </mat-select>
+            </div>
+            <div class="filter-item">
+              <div class="filter-item-header">
+                <label>Organization</label>
+                <button *ngIf="filterOrganizations.length>0" class="reset-link"
+                  (click)="resetOrganizationFilter($event)">Reset</button>
+              </div>
+              <mat-select multiple [(ngModel)]="filterOrganizations" placeholder="Select Organization"
+                panelClass="custom-select-panel">
+                <mat-select-trigger>
+                  {{ filterOrganizations.length > 0 ? filterOrganizations.join(', ') : 'Select Organization' }}
+                </mat-select-trigger>
+                <div class="filter-select-panel">
+                  <mat-checkbox class="select-all-checkbox"
+                    [checked]="filterOrganizations.length === organizationsList.length"
+                    (change)="toggleSelectAll('organization')">
+                    Select All
+                  </mat-checkbox>
+                </div>
+                <mat-option *ngFor="let org of organizationsList" [value]="org">
+                  {{ org }}
+                </mat-option>
+              </mat-select>
+            </div>
+          </div>
+          <div class="filter-footer">
+            <button class="reset-btn" (click)="resetAllFilters()">Reset All</button>
+            <button class="apply-btn" (click)="applyFilters()">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="datepicker-container">
+
+        <p class="material-symbols-outlined left-part-icons" (click)="picker.open()">calendar_today</p>
+
+        <mat-form-field class="hidden-datepicker">
+          <input matInput [(ngModel)]="pickedDate"  [matDatepicker]="picker">
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+      </div>
+
+      <input type="search" class="custom-input" placeholder="Name, Employee ID, Phone" [(ngModel)]="searchTerm"
+        (ngModelChange)="onSearchInput($event)" />
+
+      <p style="font-size: 14px; color: rgb(139, 140, 140);">
+        {{ totalHelpersCount}} helpers
+      </p>
+
+    </div>
+
+    <div class="right-part">
+      <p class="material-symbols-outlined left-part-icons" (click)="onDownload()">download</p>
+      <div class="btn-wrapper">
+        <button class="btn" type="button" (click)="navigateDashboard()">+ Add Helper</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="last-section-wrapper">
+    <div class="left-content-wrapper" #scrollContainer>
+      <div class="helper-card" *ngFor="let helper of helpers$ | async" (click)="selectHelper(helper)"
+        [class.selected]="selectedHelper?._id === helper._id">
+        <div class="avatar">
+          <img *ngIf="helper.profilePic; else initials" [src]="helper.profilePic" alt="Profile" class="avatar-img" />
+          <ng-template #initials>
+            {{ helper.fullName ? helper.fullName[0].toUpperCase() : '?' }}
+          </ng-template>
+        </div>
+        <div class="info">
+          <div class="top-row">
+            <div class="name">{{ helper.fullName || 'No Name' }}</div>
+            <div class="households-wrapper" style="display: flex; align-items: flex-start; height: 100%;">
+              <div class="households">{{ 0 }} Households</div>
+            </div>
+
+          </div>
+          <div class="designation">{{ helper.serviceType || 'No Role' }}</div>
+        </div>
+      </div>
+      <div *ngIf="isLoading$ | async" class="infinite-scroll-loader">
+        <p>Loading...</p>
+      </div>
+    </div>
+
+    <div class="right-content-wrapper">
+      <div class="helper-detail-card" id="download-button-tag" *ngIf="selectedHelper">
+        <div class="profile-header">
+          <div class="avatar-lg">
+            <ng-container *ngIf="selectedHelper.profilePic; else initialsAvatar">
+              <img [src]="selectedHelper.profilePic" alt="Profile" />
+            </ng-container>
+            <ng-template #initialsAvatar>
+              {{ selectedHelper.fullName ? selectedHelper.fullName[0].toUpperCase() : '?' }}
+            </ng-template>
+          </div>
+          <div class="name-role">
+            <div class="name">{{ selectedHelper.fullName || 'No Name' }}</div>
+            <div class="role">{{ selectedHelper.serviceType || 'No Role' }}</div>
+          </div>
+          <div class="actions">
+            <span class="material-symbols-outlined left-part-icons" (click)="editHelper(selectedHelper)">edit</span>
+            <span class="material-symbols-outlined left-part-icons" (click)="deleteHelper()">delete</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="header-with-line-wrapper">
+            <h4>Employee ID</h4>
+            <span style="width: 859px;"></span>
+          </div>
+
+          <div class="field">
+            <span>Identification Card</span>
+            <a style="cursor: pointer;" (click)="viewID()">👁️ View</a>
+          </div>
+          <div class="field">
+            <span>Employee Code</span>
+            <span>{{ selectedHelper.eCode || 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="header-with-line-wrapper">
+            <h4>Personal Details</h4>
+            <span style="width: 820px;"></span>
+          </div>
+
+          <div class="field"><span>Gender</span><span>{{ selectedHelper.gender || 'N/A' }}</span></div>
+          <div class="field"><span>Language(s)</span><span>{{ selectedHelper.languages?.join(', ') || 'N/A'
+              }}</span>
+          </div>
+          <div class="field"><span>Mobile No.</span><span>{{ selectedHelper.phone || 'N/A' }}</span></div>
+          <div class="field"><span>Email ID</span><span>{{ selectedHelper.email || '-' }}</span></div>
+          <div class="field">
+            <span>KYC Document</span>
+            <a *ngIf="selectedHelper.kycDocName" href="#"
+              (click)="viewKyc(selectedHelper._id); $event.preventDefault()">👁️ View</a>
+            <span *ngIf="!selectedHelper.kycDocName">N/A</span>
+          </div>
+        </div>
+        <div class="section">
+          <div class="header-with-line-wrapper">
+            <h4>Service Details</h4>
+            <span style="width: 834px;"></span>
+          </div>
+          <div class="field"><span>Type</span><span>{{ selectedHelper.serviceType || 'N/A' }}</span></div>
+          <div class="field"><span>Organization</span><span>{{ selectedHelper.orgName || 'N/A' }}</span></div>
+          <div class="field"><span>Joined On</span><span>{{ selectedHelper.joinedDate ? (selectedHelper.joinedDate |
+              date:'longDate') : 'N/A' }}</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="isDeleteModalVisible" class="modal-backdrop" (click)="cancelDelete()">
+  <div class="delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="header-content">
+        <span class="material-symbols-outlined warning-icon">warning</span>
+        <h3>
+          Delete
+          <span class="highlighted">
+            {{ selectedHelper?.fullName }} ({{ selectedHelper?.serviceType }})
+          </span>
+        </h3>
+      </div>
+      <button class="close-btn" (click)="cancelDelete()">×</button>
+    </div>
+    <div class="modal-content">
+      <p>You can't undo this action.</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancelDelete()">Cancel</button>
+      <button class="btn-delete" (click)="confirmDelete()">
+        <span class="material-symbols-outlined">delete</span>
+        Delete
+      </button>
+    </div>
+  </div>
+</div>

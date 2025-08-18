@@ -1,0 +1,191 @@
+<div class="total-wrapper">
+    <header class="head-wrapper">
+        <span class="material-symbols-outlined" style="font-size: xx-large;" (click)="goToDashboard()">
+            chevron_left
+        </span>
+        <p style="font-size: large;" (click)="goToDashboard()">Edit Helper</p>
+    </header>
+
+    <div class="body-wrapper">
+        <div class="left-section">
+            <p>Helper Details</p>
+            <p>Documents</p>
+        </div>
+
+        <div class="right-section">
+            <form [formGroup]="profileForm">
+                <header>
+                    <h2>Helper Details</h2>
+                    <p style="color: rgb(66, 63, 63);">Track, Add and Manage all your helpers at one place</p>
+                </header>
+                <div class="form-wrapper">
+
+                    <section class="upload-image-wrapper">
+                        <div *ngIf="imgSrc; else showUpload" class="upload-image preview" (click)="handlePhotoUploadClick($event)">
+                            <img [src]="imgSrc" alt="Profile Picture" class="profile-pic-preview" />
+                        </div>
+                        <ng-template #showUpload>
+                            <div class="upload-image" (click)="handlePhotoUploadClick($event)">
+                                <span class="material-symbols-outlined">cloud_upload</span>
+                                <div class="img-text">Upload Photo</div>
+                            </div>
+                        </ng-template>
+                        <p *ngIf="photoFileName">{{ photoFileName }}</p>
+                        <input type="file" #photoInput accept=".png,.jpeg,.jpg" (change)="onPhotoSelected($event)" style="display:none;">
+                        <p>Upload photo (.png, .jpeg) size 5 MB</p>
+                    </section>
+
+                    <section class="service-wrapper" style="color: black; font-size: medium;">
+                        <p>Type of Service*</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="serviceType" disableRipple panelClass="service-panel-class">
+                                <mat-option>
+                                    <label for="searchBox">Search type of service</label>
+                                    <input id="searchBox" type="text" matInput placeholder="Search service"
+                                        [(ngModel)]="serviceSearch" [ngModelOptions]="{ standalone: true }"
+                                        (click)="$event.stopPropagation()" />
+                                </mat-option>
+                                <mat-option *ngFor="let service of filteredServices()"
+                                    [value]="service">{{service}}</mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="profileForm.get('serviceType')?.hasError('required') && profileForm.get('serviceType')?.touched">
+                                This field is mandatory.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="organization-selector-wrapper">
+                        <p>Organization Name*</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="orgName" placeholder="Organization Name">
+                                <mat-option value="ASBL">ASBL</mat-option>
+                                <mat-option value="Springers Helpers">Springers Helpers</mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="profileForm.get('orgName')?.hasError('required') && profileForm.get('orgName')?.touched">
+                                This field is mandatory.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="full-name-wrapper">
+                        <p>Full Name*</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="text" formControlName="fullName" placeholder="Full Name">
+                            <mat-error *ngIf="profileForm.get('fullName')?.hasError('required') && profileForm.get('fullName')?.touched">
+                                This field is mandatory.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="languages-dropdown-wrapper">
+                        <p>Languages*</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="languages" placeholder="Languages" multiple disableRipple>
+                                <mat-select-trigger>
+                                    {{
+                                    selectedLanguages.length > 0
+                                    ? selectedLanguages[0] +
+                                    (selectedLanguages.length > 1
+                                    ? ' +' + (selectedLanguages.length - 1)
+                                    : '')
+                                    : 'Languages'
+                                    }}
+                                </mat-select-trigger>
+                                <mat-option *ngFor="let lang of languagesList" [value]="lang">{{ lang }}</mat-option>
+                            </mat-select>
+                            <mat-error *ngIf="profileForm.get('languages')?.hasError('invalidLanguageCount') && profileForm.get('languages')?.touched">
+                                Select at least 1 and at most 3 languages.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="gender-selector-wrapper">
+                        <p>Gender*</p>
+                        <mat-radio-group formControlName="gender" aria-label="Select an option">
+                            <mat-radio-button value="male">Male</mat-radio-button>
+                            <mat-radio-button value="female">Female</mat-radio-button>
+                            <mat-radio-button value="other">Other</mat-radio-button>
+                        </mat-radio-group>
+                        <mat-error *ngIf="profileForm.get('gender')?.hasError('required') && profileForm.get('gender')?.touched">
+                            Please select a gender.
+                        </mat-error>
+                    </section>
+
+                    <section class="phone-input-wrapper">
+                        <p>Phone*</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="tel" formControlName="phone">
+                            <mat-error *ngIf="profileForm.get('phone')?.hasError('required') && profileForm.get('phone')?.touched">
+                                This field is mandatory.
+                            </mat-error>
+                            <mat-error *ngIf="profileForm.get('phone')?.hasError('pattern') && profileForm.get('phone')?.touched">
+                                Please enter a valid 10-digit number.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="email-input-wrapper">
+                        <p>Email</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="email" formControlName="email" placeholder="example@abc.com">
+                            <mat-error *ngIf="profileForm.get('email')?.hasError('pattern') && profileForm.get('email')?.touched">
+                                Please enter a valid email.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="vehicle-selector-wrapper">
+                        <p>Choose Vehicle Type</p>
+                        <mat-form-field appearance="outline">
+                            <mat-select formControlName="vehicleType" disableRipple placeholder="None">
+                                <mat-option *ngFor="let vehicle of vehicles" [value]="vehicle">{{vehicle}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </section>
+
+                    <section *ngIf="profileForm.get('vehicleType')?.value!=='None'" class="vehicle-input-wrapper">
+                        <p>Vehicle Number*</p>
+                        <mat-form-field appearance="outline">
+                            <input matInput type="text" formControlName="vehicleNumber" placeholder="TG01AB1234">
+                            <mat-error *ngIf="profileForm.get('vehicleNumber')?.hasError('required') && profileForm.get('vehicleNumber')?.touched">
+                                This field is mandatory.
+                            </mat-error>
+                        </mat-form-field>
+                    </section>
+
+                    <section class="kyc-wrapper">
+                        <p>KYC Document*</p>
+                        
+                        <div *ngIf="kycFileName; else showUploadBox" class="file-preview-card">
+                            <span class="material-symbols-outlined file-icon">picture_as_pdf</span>
+                            <div class="file-info">
+                                <span class="file-name" [title]="kycFileName">{{ kycFileName }}</span>
+                                <span class="file-size" *ngIf="profileForm.get('kycDoc')?.value as kycFile">
+                                    {{ formatFileSize(kycFile.size) }}
+                                </span>
+                            </div>
+                            <span class="material-symbols-outlined replace-icon" (click)="handleKycUploadClick($event)">refresh</span>
+                        </div>
+
+                        <ng-template #showUploadBox>
+                            <div class="kyc-upload" (click)="handleKycUploadClick($event)">
+                                <span class="material-symbols-outlined">add_2</span>
+                            </div>
+                        </ng-template>
+
+                        <input type="file" #kycInput accept=".pdf,.jpeg,.jpg,.png" (change)="onKycFileSelected($event)"
+                            style="display: none;">
+
+                        <mat-error *ngIf="profileForm.get('kycDoc')?.hasError('required') && profileForm.get('kycDoc')?.touched">
+                            This field is mandatory.
+                        </mat-error>
+                    </section>
+
+                    <div class="btn-wrapper">
+                        <button class="btn" type="button" (click)="goToNextStep()">Submit </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

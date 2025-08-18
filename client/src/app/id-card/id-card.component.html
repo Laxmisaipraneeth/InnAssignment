@@ -1,0 +1,76 @@
+<div class="id-container">
+    <div class="header">
+        <h5>Employee Id</h5>
+        <span class="material-symbols-outlined" (click)="closeDialog()" style="cursor: pointer;">
+            close
+        </span>
+    </div>
+    <div class="content-wrapper" id="sel-for-canvas">
+        <div class="items item-1">
+            <div class="img-wrapper">
+                <img class="profile-img" *ngIf="data.profilePic; else elseBlock" [src]="data.profilePic"
+                    alt="profile picture">
+                <ng-template #elseBlock>
+                    <img class="profile-img" src="../../assets/no-pfp.png" alt="profile picture">
+                </ng-template>
+            </div>
+            <p>{{data.fullName}}</p>
+            <p>{{data.serviceType}}</p>
+            <p>#{{data.eCode}}</p>
+            <img class="qr-code" [src]="dataUrl" alt="">
+        </div>
+        <div class="items item-2">
+            <div class="section-1">
+                <img src="../../assets/Footer_ASBL_Springs_Logo.webp" style="width: 120px;height:35px;">
+                <div class="right-section">
+                    <div class="inner-left">
+                    </div>
+                    <div class="inner-right">
+                        <p class="depart-style">Homes</p>
+                        <p class="org-name">by ASBL</p>
+                    </div>
+                </div>
+            </div>
+            <div class="section-2">
+                <table>
+                    <tr>
+                        <td>Organization</td>
+                        <td>{{data.orgName}}</td>
+                    </tr>
+                    <tr>
+                        <td>EMP ID</td>
+                        <td>{{data.eCode}}</td>
+                    </tr>
+                    <tr>
+                        <td>Phone Number</td>
+                        <td>{{data.phone}}</td>
+                    </tr>
+                    <tr>
+                        <td>Joined Date</td>
+                        <td>{{ data.joinedDate ? (data.joinedDate |
+              date:'longDate') : 'N/A' }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="section-3">
+                <img class="qr-code" [src]="dataUrl" alt="">
+                <p>Unauthorized use of someone else's card could be considered a legal offence.</p>
+            </div>
+        </div>
+
+    </div>
+    <div class="print-wrapper">
+        <button (click)="onPrint()">
+            <span class="material-symbols-outlined">
+                print
+            </span>
+            Print
+        </button>
+        <button (click)="onDownload()">
+            <span class="material-symbols-outlined">
+                download
+            </span>
+            Download
+        </button>
+    </div>
+</div>
