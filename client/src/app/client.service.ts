@@ -25,11 +25,6 @@ export class ClientService {
     return this.http.post(url, data) as Observable<AddHelperResponse>;
   }
 
-  getAllHelpers(): Observable<Helper[]> {
-    const url = `${this.baseServerUrl}/api/getHelpers`;
-    return this.http.get<Helper[]>(url);
-  }
-
   deleteHelper(uid: string) {
     const url = `${this.baseServerUrl}/api/deleteHelper/${uid}`;
     return this.http.delete(url);
