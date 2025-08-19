@@ -2,6 +2,12 @@ import { Request, Response } from 'express';
 import Helper from '../models/helper.model';
 import { IHelperDocument } from '../models/interfaces';
 
+// Helper function to escape special regex characters
+const escapeRegex = (text: string) => {
+    if(!text) return '';
+    return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+};
+
 
 const getHelpersInfinite = async (req: Request, res: Response) => {
     try {
@@ -12,22 +18,22 @@ const getHelpersInfinite = async (req: Request, res: Response) => {
         console.log(req.query);
 
         const searchTerm = (req.query.search as string) || '';
-
         const sortKey = (req.query.sortBy as string) || 'fullName';
-
-        const services = (req.query.services as string)
-        const organizations = (req.query.organizations as string)
+        const services = (req.query.services as string);
+        const organizations = (req.query.organizations as string);
 
         const queryCondition: any = {};
 
         if (searchTerm) {
-            const searchRegex = new RegExp(searchTerm, 'i');
+            const sanitizedSearchTerm = escapeRegex(searchTerm);
+            const searchRegex = new RegExp(sanitizedSearchTerm, 'i');
 
             const orConditions: any[] = [
                 { fullName: searchRegex },
                 { phone: searchRegex }
             ];
 
+            // Check if the original (non-sanitized) term is a number
             if (!isNaN(parseInt(searchTerm))) {
                 const numericSearchTerm = parseInt(searchTerm, 10);
                 orConditions.push({ eCode: numericSearchTerm });
@@ -47,8 +53,6 @@ const getHelpersInfinite = async (req: Request, res: Response) => {
             queryCondition.orgName = {$in:orgArray};
         }
         console.log('after filter logic');
-
-
 
         const [helpers, totalCountAfterFilter] = await Promise.all([
             Helper.find(queryCondition, { kycDoc: 0 }).sort({ [sortKey]: 1 }).skip(skip).limit(limit),
@@ -77,9 +81,8 @@ const getHelpersInfinite = async (req: Request, res: Response) => {
 
     } catch (err) {
         console.error("Error fetching helpers:", err);
-        res.status(500).json({ error: 'Failed to fetch helpers', details: err });
+        res.status(500).json({ error: 'Failed to fetch helpers' });
     }
-
 }
 
 export default getHelpersInfinite;

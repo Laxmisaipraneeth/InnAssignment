@@ -13,6 +13,8 @@ import { SERVICES, LANGUAGES } from '../constants/data.constants';
 import { HelperStoreService } from '../helper-store.service';
 import { Helper } from '../models/helper.model';
 import { HelperDetailsComponent } from '../helper-details/helper-details.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ToastrService } from 'ngx-toastr';
 
 type FieldType = 'select' | 'input' | 'radio' | 'conditional-input';
 
@@ -42,7 +44,7 @@ interface FormFieldConfig {
     MatRadioModule,
     FormsModule,
     MatStepperModule,
-    HelperDetailsComponent // Import the reusable component
+    HelperDetailsComponent
   ],
   standalone: true,
   templateUrl: './helper.component.html',
@@ -52,7 +54,11 @@ interface FormFieldConfig {
 })
 export class HelperComponent implements OnInit, OnDestroy {
 
-  constructor(private router: Router, private helperStore: HelperStoreService) { }
+  constructor(
+    private router: Router,
+    private helperStore: HelperStoreService,
+    private toastr: ToastrService
+  ) { }
 
   services: string[] = SERVICES;
   languagesList: string[] = LANGUAGES;
@@ -67,6 +73,7 @@ export class HelperComponent implements OnInit, OnDestroy {
 
   @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
   @ViewChild('kycInput') kycInputRef!: ElementRef<HTMLInputElement>;
+  @ViewChild('stepper') stepper!: MatStepper;
 
   languageCountValidator: ValidatorFn = (control: AbstractControl) => {
     const value = control.value;
@@ -143,8 +150,23 @@ export class HelperComponent implements OnInit, OnDestroy {
       }
 
       this.helperStore.addHelper(formData).subscribe({
-        next: () => this.goToDashboard(),
-        error: (err) => console.error('Error submitting profile:', err)
+        next: () => {
+          this.toastr.success('Helper registered successfully!', 'Success');
+          this.goToDashboard();
+        },
+        error: (err: HttpErrorResponse) => {
+          if (err.status === 409) {
+            this.toastr.warning(err.error.error, 'Duplicate Found', {
+              timeOut: 5000,
+              closeButton: true,
+              progressBar: true,
+            });
+            this.stepper.selectedIndex = 0;
+          } else {
+            this.toastr.error('An unexpected error occurred. Please try again.', 'Submission Failed');
+            console.error('Error submitting profile:', err);
+          }
+        }
       });
     } else {
       this.profileForm.markAllAsTouched();
@@ -182,7 +204,6 @@ export class HelperComponent implements OnInit, OnDestroy {
     }
   }
 
-
   filteredServices(): string[] {
     if (!this.serviceSearch) return this.services;
     return this.services.filter(service =>
@@ -194,12 +215,12 @@ export class HelperComponent implements OnInit, OnDestroy {
     const file = (event.target as HTMLInputElement).files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5 MB limit');
+        this.toastr.error('File size exceeds 5 MB limit.', 'Upload Error');
         return;
       }
       const validTypes = ['image/png', 'image/jpeg'];
       if (!validTypes.includes(file.type)) {
-        alert('Invalid file type. Only PNG/JPEG allowed.');
+        this.toastr.error('Invalid file type. Only PNG/JPEG allowed.', 'Upload Error');
         return;
       }
       if (this.imgSrc) {

@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, Subject, of, throwError } from 'rxjs';
 import { ClientService } from './client.service';
 import { Helper, IPaginatedHelpersResponse } from './models/helper.model';
-import { tap, catchError, map, debounceTime, switchMap, filter, distinctUntilChanged } from 'rxjs/operators';
+import { tap, catchError, map, debounceTime, switchMap, distinctUntilChanged } from 'rxjs/operators';
 import AddHelperResponse from './models/addhelper.response';
+import { HttpErrorResponse } from '@angular/common/http';
 
 export interface IHelperFetchParams extends IFilter {
   page: number;
@@ -51,14 +52,11 @@ export class HelperStoreService {
       tap(() => this.isLoadingSubject.next(true)),
       switchMap(
         params => {
-          console.log(params);
-
           return this.clientService.getHelpersPaginated(params).pipe(
             catchError(err => {
               console.error('Failed to fetch more helpers', err);
               this.isLoadingSubject.next(false);
               return of(null);
-
             })
           )
         }
@@ -67,7 +65,6 @@ export class HelperStoreService {
         if (res) {
           this.currentPage = res.page;
           this.totalPages = res.totalPages;
-
           this.totalHelpersSubject.next(res.total);
 
           if (res.page == 1) {
@@ -90,22 +87,14 @@ export class HelperStoreService {
     this.helpersSubject.next([]);
     this.loadTriggerSubject.next({ page: 1, limit });
   }
+
   public search(searchTerm: string): void {
     this.currentSearchTerm = searchTerm;
     this.resetAndFetch();
   }
 
-
   public sort(key: 'name' | 'eCode'): void {
-
-    if (key == 'name') {
-      this.currentSortKey = 'fullName';
-    }
-    else {
-      this.currentSortKey = key;
-    }
-
-    console.log(this.currentSortKey)
+    this.currentSortKey = key === 'name' ? 'fullName' : key;
     this.resetAndFetch();
   }
 
@@ -113,25 +102,18 @@ export class HelperStoreService {
     this.orgFilter = filters.orgs as string;
     this.serviceFilter = filters.services as string;
     this.resetAndFetch();
-    console.log('in helper-store.service');
-
-    console.log(this.orgFilter, this.serviceFilter)
   }
-
-
 
   public loadMore(limit: number = 20): void {
     const nextPage = this.currentPage + 1;
-    this.loadTriggerSubject.next(
-      {
-        page: nextPage,
-        limit: 20,
-        search: this.currentSearchTerm,
-        sortBy: this.currentSortKey,
-        servicesFilter: this.serviceFilter,
-        orgFilter: this.orgFilter
-      }
-    );
+    this.loadTriggerSubject.next({
+      page: nextPage,
+      limit: limit,
+      search: this.currentSearchTerm,
+      sortBy: this.currentSortKey,
+      servicesFilter: this.serviceFilter,
+      orgFilter: this.orgFilter
+    });
   }
 
   public hasMorePages(): boolean {
@@ -149,22 +131,19 @@ export class HelperStoreService {
       sortBy: this.currentSortKey,
       servicesFilter: this.serviceFilter,
       orgFilter: this.orgFilter
-    })
+    });
   }
-
-
 
   addHelper(formData: FormData): Observable<AddHelperResponse> {
     return this.clientService.submitProfile(formData).pipe(
       tap(() => {
         this.resetAndFetch();
       }),
-      catchError(err => {
+      catchError((err: HttpErrorResponse) => {
         console.error('Failed to add helper:', err);
         return throwError(() => err);
       })
     );
-
   }
 
   deleteHelper(id: string): void {
@@ -183,14 +162,12 @@ export class HelperStoreService {
   }
 
   editHelper(id: string, changes: Partial<Helper>): Observable<Helper> {
-
     return this.clientService.updateHelper(id, changes).pipe(
       tap(() => {
         this.resetAndFetch();
       }),
-      catchError(err => {
+      catchError((err: HttpErrorResponse) => {
         console.error('Failed to update helper:', err);
-
         return throwError(() => err);
       })
     );
@@ -201,7 +178,7 @@ export class HelperStoreService {
       tap(() => {
         this.resetAndFetch();
       }),
-      catchError(err => {
+      catchError((err: HttpErrorResponse) => {
         return throwError(() => err);
       })
     );

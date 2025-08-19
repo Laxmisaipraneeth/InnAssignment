@@ -3,15 +3,12 @@ import mongoose from 'mongoose';
 const HelperSchema = new mongoose.Schema({
     eCode: {
         type: Number,
-        required: true
+        required: true,
+        unique: true 
     },
     profilePic: {
-        data: {
-            type: Buffer
-        },
-        contentType: {
-            type: String
-        }
+        data: Buffer,
+        contentType: String
     },
     fullName: {
         type: String,
@@ -24,9 +21,12 @@ const HelperSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
+        unique: true, 
     },
     email: {
-        type: String
+        type: String,
+        unique: true, 
+        sparse: true 
     },
     languages: {
         type: [String],
@@ -34,11 +34,13 @@ const HelperSchema = new mongoose.Schema({
     serviceType: {
         type: String,
         required: [true, 'The role is required'],
+        index: true 
     },
     orgName: {
         type: String,
         enum: ['ASBL', 'Springers Helpers'],
         required: [true, 'The Organisation name is required'],
+        index: true 
     },
     vehicleType: {
         type: String,
@@ -49,12 +51,8 @@ const HelperSchema = new mongoose.Schema({
         type: String,
     },
     kycDoc: {
-        data: {
-            type: Buffer,
-        },
-        contentType: {
-            type: String,
-        }
+        data: Buffer,
+        contentType: String
     },
     kycDocName: {
         type: String,
@@ -65,4 +63,8 @@ const HelperSchema = new mongoose.Schema({
         required: true,
     }
 });
-export default mongoose.model('Helper', HelperSchema)
+
+HelperSchema.index({ orgName: 1, serviceType: 1 });
+HelperSchema.index({fullName:1,phone:1},{unique:true});
+
+export default mongoose.model('Helper', HelperSchema);

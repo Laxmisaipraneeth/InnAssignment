@@ -10,6 +10,7 @@
   },
   "private": true,
   "dependencies": {
+    "@angular/animations": "^19.2.14",
     "@angular/cdk": "^19.2.19",
     "@angular/common": "^19.2.0",
     "@angular/compiler": "^19.2.0",
@@ -24,6 +25,7 @@
     "angularx-qrcode": "^19.0.0",
     "html2canvas": "^1.4.1",
     "ngx-qrcode": "^0.1.0-rc.1",
+    "ngx-toastr": "^19.0.0",
     "qrcode": "^1.5.4",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
