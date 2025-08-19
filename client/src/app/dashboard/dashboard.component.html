@@ -34,20 +34,15 @@
             <div class="filter-item">
               <div class="filter-item-header">
                 <label>Service</label>
-                <button *ngIf="filterServices.length>0" class="reset-link"
-                  (click)="resetServiceFilter($event)">Reset</button>
+                <button *ngIf="filterServices.length > 0" class="reset-link" (click)="resetServiceFilter($event)">Reset</button>
               </div>
-              <mat-select multiple [(ngModel)]="filterServices" placeholder="Select Service"
-                panelClass="custom-select-panel">
+              <mat-select multiple [(ngModel)]="filterServices" placeholder="Select Service" panelClass="custom-select-panel">
                 <mat-select-trigger>
                   {{ filterServices.length > 0 ? filterServices.join(', ') : 'Select Service' }}
                 </mat-select-trigger>
                 <div class="filter-select-panel">
-                  <input class="filter-search-input" [(ngModel)]="serviceSearch" placeholder="search"
-                    (click)="$event.stopPropagation()">
-                  <mat-checkbox class="select-all-checkbox"
-                    [checked]="filterServices.length === servicesList.length && servicesList.length > 0"
-                    (change)="toggleSelectAll('service')">
+                  <input class="filter-search-input" [(ngModel)]="serviceSearch" placeholder="search" (click)="$event.stopPropagation()">
+                  <mat-checkbox class="select-all-checkbox" [checked]="filterServices.length === servicesList.length && servicesList.length > 0" (change)="toggleSelectAll('service')">
                     Select All ({{servicesList.length}})
                   </mat-checkbox>
                 </div>
@@ -59,18 +54,14 @@
             <div class="filter-item">
               <div class="filter-item-header">
                 <label>Organization</label>
-                <button *ngIf="filterOrganizations.length>0" class="reset-link"
-                  (click)="resetOrganizationFilter($event)">Reset</button>
+                <button *ngIf="filterOrganizations.length > 0" class="reset-link" (click)="resetOrganizationFilter($event)">Reset</button>
               </div>
-              <mat-select multiple [(ngModel)]="filterOrganizations" placeholder="Select Organization"
-                panelClass="custom-select-panel">
+              <mat-select multiple [(ngModel)]="filterOrganizations" placeholder="Select Organization" panelClass="custom-select-panel">
                 <mat-select-trigger>
                   {{ filterOrganizations.length > 0 ? filterOrganizations.join(', ') : 'Select Organization' }}
                 </mat-select-trigger>
                 <div class="filter-select-panel">
-                  <mat-checkbox class="select-all-checkbox"
-                    [checked]="filterOrganizations.length === organizationsList.length"
-                    (change)="toggleSelectAll('organization')">
+                  <mat-checkbox class="select-all-checkbox" [checked]="filterOrganizations.length === organizationsList.length" (change)="toggleSelectAll('organization')">
                     Select All
                   </mat-checkbox>
                 </div>
@@ -88,18 +79,14 @@
       </div>
 
       <div class="datepicker-container">
-
         <p class="material-symbols-outlined left-part-icons" (click)="picker.open()">calendar_today</p>
-
         <mat-form-field class="hidden-datepicker">
-          <input matInput [(ngModel)]="pickedDate"  [matDatepicker]="picker">
+          <input matInput [(ngModel)]="pickedDate" [matDatepicker]="picker" (dateChange)="onDateChange()">
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
-
       </div>
 
-      <input type="search" class="custom-input" placeholder="Name, Employee ID, Phone" [(ngModel)]="searchTerm"
-        (ngModelChange)="onSearchInput($event)" />
+      <input type="search" class="custom-input" placeholder="Name, Employee ID, Phone" [(ngModel)]="searchTerm" (ngModelChange)="onSearchInput($event)" />
 
       <p style="font-size: 14px; color: rgb(139, 140, 140);">
         {{ totalHelpersCount}} helpers
@@ -108,7 +95,6 @@
     </div>
 
     <div class="right-part">
-      <p class="material-symbols-outlined left-part-icons" (click)="onDownload()">download</p>
       <div class="btn-wrapper">
         <button class="btn" type="button" (click)="navigateDashboard()">+ Add Helper</button>
       </div>
@@ -117,8 +103,7 @@
 
   <div class="last-section-wrapper">
     <div class="left-content-wrapper" #scrollContainer>
-      <div class="helper-card" *ngFor="let helper of helpers$ | async" (click)="selectHelper(helper)"
-        [class.selected]="selectedHelper?._id === helper._id">
+      <div class="helper-card" *ngFor="let helper of helpers$ | async" (click)="selectHelper(helper)" [class.selected]="selectedHelper?._id === helper._id">
         <div class="avatar">
           <img *ngIf="helper.profilePic; else initials" [src]="helper.profilePic" alt="Profile" class="avatar-img" />
           <ng-template #initials>
@@ -128,10 +113,7 @@
         <div class="info">
           <div class="top-row">
             <div class="name">{{ helper.fullName || 'No Name' }}</div>
-            <div class="households-wrapper" style="display: flex; align-items: flex-start; height: 100%;">
-              <div class="households">{{ 0 }} Households</div>
-            </div>
-
+            <div class="households">{{ 0 }} Households</div>
           </div>
           <div class="designation">{{ helper.serviceType || 'No Role' }}</div>
         </div>
@@ -142,70 +124,13 @@
     </div>
 
     <div class="right-content-wrapper">
-      <div class="helper-detail-card" id="download-button-tag" *ngIf="selectedHelper">
-        <div class="profile-header">
-          <div class="avatar-lg">
-            <ng-container *ngIf="selectedHelper.profilePic; else initialsAvatar">
-              <img [src]="selectedHelper.profilePic" alt="Profile" />
-            </ng-container>
-            <ng-template #initialsAvatar>
-              {{ selectedHelper.fullName ? selectedHelper.fullName[0].toUpperCase() : '?' }}
-            </ng-template>
-          </div>
-          <div class="name-role">
-            <div class="name">{{ selectedHelper.fullName || 'No Name' }}</div>
-            <div class="role">{{ selectedHelper.serviceType || 'No Role' }}</div>
-          </div>
-          <div class="actions">
-            <span class="material-symbols-outlined left-part-icons" (click)="editHelper(selectedHelper)">edit</span>
-            <span class="material-symbols-outlined left-part-icons" (click)="deleteHelper()">delete</span>
-          </div>
-        </div>
-        <div class="section">
-          <div class="header-with-line-wrapper">
-            <h4>Employee ID</h4>
-            <span style="width: 859px;"></span>
-          </div>
-
-          <div class="field">
-            <span>Identification Card</span>
-            <a style="cursor: pointer;" (click)="viewID()">👁️ View</a>
-          </div>
-          <div class="field">
-            <span>Employee Code</span>
-            <span>{{ selectedHelper.eCode || 'N/A' }}</span>
-          </div>
-        </div>
-        <div class="section">
-          <div class="header-with-line-wrapper">
-            <h4>Personal Details</h4>
-            <span style="width: 820px;"></span>
-          </div>
-
-          <div class="field"><span>Gender</span><span>{{ selectedHelper.gender || 'N/A' }}</span></div>
-          <div class="field"><span>Language(s)</span><span>{{ selectedHelper.languages?.join(', ') || 'N/A'
-              }}</span>
-          </div>
-          <div class="field"><span>Mobile No.</span><span>{{ selectedHelper.phone || 'N/A' }}</span></div>
-          <div class="field"><span>Email ID</span><span>{{ selectedHelper.email || '-' }}</span></div>
-          <div class="field">
-            <span>KYC Document</span>
-            <a *ngIf="selectedHelper.kycDocName" href="#"
-              (click)="viewKyc(selectedHelper._id); $event.preventDefault()">👁️ View</a>
-            <span *ngIf="!selectedHelper.kycDocName">N/A</span>
-          </div>
-        </div>
-        <div class="section">
-          <div class="header-with-line-wrapper">
-            <h4>Service Details</h4>
-            <span style="width: 834px;"></span>
-          </div>
-          <div class="field"><span>Type</span><span>{{ selectedHelper.serviceType || 'N/A' }}</span></div>
-          <div class="field"><span>Organization</span><span>{{ selectedHelper.orgName || 'N/A' }}</span></div>
-          <div class="field"><span>Joined On</span><span>{{ selectedHelper.joinedDate ? (selectedHelper.joinedDate |
-              date:'longDate') : 'N/A' }}</span></div>
-        </div>
-      </div>
+      <app-helper-details 
+        *ngIf="selectedHelper"
+        [selectedHelper]="selectedHelper"
+        (onEdit)="editHelper($event)"
+        (onDelete)="deleteHelper()"
+        (onDownload)="onDownload()">
+      </app-helper-details>
     </div>
   </div>
 </div>

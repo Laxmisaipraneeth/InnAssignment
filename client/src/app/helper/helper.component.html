@@ -63,22 +63,22 @@
                     </section>
 
                     @for (config of formFieldsConfig(); track config.name) {
-                        @if (!config.condition || config.condition(profileForm)) {
-                            @switch (config.type) {
-                                @case ('select') {
-                                    <ng-container *ngTemplateOutlet="selectInputTpl; context: {$implicit: config}"></ng-container>
-                                }
-                                @case ('radio') {
-                                    <ng-container *ngTemplateOutlet="radioInputTpl; context: {$implicit: config}"></ng-container>
-                                }
-                                @case ('input') {
-                                    <ng-container *ngTemplateOutlet="textInputTpl; context: {$implicit: config}"></ng-container>
-                                }
-                                @case ('conditional-input') {
-                                    <ng-container *ngTemplateOutlet="conditionalInputTpl; context: {$implicit: config}"></ng-container>
-                                }
-                            }
-                        }
+                    @if (!config.condition || config.condition(profileForm)) {
+                    @switch (config.type) {
+                    @case ('select') {
+                    <ng-container *ngTemplateOutlet="selectInputTpl; context: {$implicit: config}"></ng-container>
+                    }
+                    @case ('radio') {
+                    <ng-container *ngTemplateOutlet="radioInputTpl; context: {$implicit: config}"></ng-container>
+                    }
+                    @case ('input') {
+                    <ng-container *ngTemplateOutlet="textInputTpl; context: {$implicit: config}"></ng-container>
+                    }
+                    @case ('conditional-input') {
+                    <ng-container *ngTemplateOutlet="conditionalInputTpl; context: {$implicit: config}"></ng-container>
+                    }
+                    }
+                    }
                     }
 
                     <section class="kyc-wrapper">
@@ -130,65 +130,14 @@
             </form>
 
             <div *ngSwitchCase="2" class="review-details-container">
-                <div class="details-card">
-                    <header class="details-header">
-                        <div class="profile-picture-container">
-                            <ng-container *ngIf="imgSrc; else noImg">
-                                <img [src]="imgSrc" alt="Profile Picture" class="profile-picture" />
-                            </ng-container>
-                            <ng-template #noImg>
-                                <div class="fallback-avatar">
-                                    {{ profileForm.get('fullName')?.value?.[0] || '?' }}
-                                </div>
-                            </ng-template>
-                        </div>
 
-                        <div class="name-container">
-                            <h1 class="name">{{ profileForm.get('fullName')?.value || 'Unnamed' }}</h1>
-                            <p class="service-type">{{ profileForm.get('serviceType')?.value || 'N/A' }}</p>
-                        </div>
-                    </header>
+                <app-helper-details *ngIf="previewHelper" [selectedHelper]="previewHelper"
+                    [kycDoc]="profileForm.get('kycDoc')?.value ?? null">
+                </app-helper-details>
 
-                    <section class="details-section">
-                        <h2 class="section-title">PERSONAL DETAILS</h2>
-                        <div class="details-grid">
-                            <div class="detail-label">Gender</div>
-                            <div class="detail-value">{{ profileForm.get('gender')?.value || '-' }}</div>
-
-                            <div class="detail-label">Languages</div>
-                            <div class="detail-value">{{ (profileForm.get('languages')?.value || []).join(', ') }}</div>
-
-                            <div class="detail-label">Mobile No.</div>
-                            <div class="detail-value">{{ profileForm.get('phone')?.value || '-' }}</div>
-
-                            <div class="detail-label">Email ID</div>
-                            <div class="detail-value">{{ profileForm.get('email')?.value || '-' }}</div>
-
-                            <div class="detail-label">KYC Document</div>
-                            <div class="detail-value kyc-document">
-                                <div>
-                                    <span class="view-button" (click)="previewKycFile($event)">view</span>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="details-section">
-                        <h2 class="section-title">SERVICE DETAILS</h2>
-                        <div class="details-grid">
-                            <div class="detail-label">Type</div>
-                            <div class="detail-value">{{ profileForm.get('serviceType')?.value || '-' }}</div>
-
-                            <div class="detail-label">Organization</div>
-                            <div class="detail-value">{{ profileForm.get('orgName')?.value || '-' }}</div>
-                        </div>
-                    </section>
-                </div>
                 <div class="btn-wrapper">
-                    <button class="btn" type="button" (click)="stepper.previous()">
-                        Previous
-                    </button>
-                    <button class="btn" (click)="submitForm()"> + Add Helper</button>
+                    <button class="btn" type="button" (click)="stepper.previous()">Previous</button>
+                    <button class="btn" (click)="submitForm()">+ Add Helper</button>
                 </div>
             </div>
         </ng-container>

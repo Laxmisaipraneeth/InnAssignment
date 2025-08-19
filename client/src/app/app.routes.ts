@@ -3,13 +3,14 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { HelperComponent } from './helper/helper.component';
 import { EditComponent } from './edit/edit.component';
 import { IdCardComponent } from './id-card/id-card.component';
-
+import { HelperDetailsComponent } from './helper-details/helper-details.component';
 const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
   { path: 'add-helper', component: HelperComponent },
   {path:'edit-helper/:id',component:EditComponent},
-  {path:'id',component:IdCardComponent}
+  {path:'id',component:IdCardComponent},
+  {path:'helper-details',component:HelperDetailsComponent}
 ];
 
 export default routes;

@@ -1,0 +1,71 @@
+<div class="helper-detail-card" id="download-button-tag" *ngIf="selectedHelper">
+    <div class="profile-header">
+        <div class="avatar-lg">
+            <ng-container *ngIf="selectedHelper.profilePic; else initialsAvatar">
+                <img [src]="selectedHelper.profilePic" alt="Profile" />
+            </ng-container>
+            <ng-template #initialsAvatar>
+                {{ selectedHelper.fullName ? selectedHelper.fullName[0].toUpperCase() : '?' }}
+            </ng-template>
+        </div>
+        <div class="name-role">
+            <div class="name">{{ selectedHelper.fullName || 'No Name' }}</div>
+            <div class="role">{{ selectedHelper.serviceType || 'No Role' }}</div>
+        </div>
+        <div class="actions" *ngIf="!selectedHelper.isPreview">
+            <span class="material-symbols-outlined left-part-icons" (click)="editHelper(selectedHelper)">edit</span>
+            <span class="material-symbols-outlined left-part-icons" (click)="deleteHelper()">delete</span>
+        </div>
+    </div>
+
+    @if(!selectedHelper.isPreview){
+    <div class="section">
+        <div class="header-with-line-wrapper">
+            <h4>Employee ID</h4>
+            <span></span>
+        </div>
+        <div class="field">
+            <span>Identification Card</span>
+            <a style="cursor: pointer;" (click)="viewID()">👁️ View</a>
+        </div>
+        <div class="field">
+            <span>Employee Code</span>
+            <span>{{ selectedHelper.eCode || 'N/A' }}</span>
+        </div>
+    </div>
+    }
+
+
+    <div class="section">
+        <div class="header-with-line-wrapper">
+            <h4>Personal Details</h4>
+            <span></span>
+        </div>
+        <div class="field"><span>Gender</span><span>{{ selectedHelper.gender || 'N/A' }}</span></div>
+        <div class="field"><span>Language(s)</span><span>{{ selectedHelper.languages?.join(', ') || 'N/A' }}</span>
+        </div>
+        <div class="field"><span>Mobile No.</span><span>{{ selectedHelper.phone || 'N/A' }}</span></div>
+        <div class="field"><span>Email ID</span><span>{{ selectedHelper.email || '-' }}</span></div>
+        <div class="field">
+            <span>KYC Document</span>
+            <a *ngIf="selectedHelper.kycDocName || kycDoc" href="#"
+                (click)="viewKyc(selectedHelper._id); $event.preventDefault()">👁️ View</a>
+            <span *ngIf="!selectedHelper.kycDocName && !kycDoc">N/A</span>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="header-with-line-wrapper">
+            <h4>Service Details</h4>
+            <span></span>
+        </div>
+        <div class="field"><span>Type</span><span>{{ selectedHelper.serviceType || 'N/A' }}</span></div>
+        <div class="field"><span>Organization</span><span>{{ selectedHelper.orgName || 'N/A' }}</span></div>
+
+        <div class="field">
+            <span>Joined On</span><span>{{ selectedHelper.joinedDate ? (selectedHelper.joinedDate |
+                date:'longDate') : 'N/A' }}</span>
+        </div>
+
+    </div>
+</div>

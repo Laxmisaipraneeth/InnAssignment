@@ -11,10 +11,10 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { Subscription, fromEvent, Observable } from 'rxjs';
 import { map, filter, tap } from 'rxjs/operators';
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
-import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { IdCardComponent } from '../id-card/id-card.component';
 import { DownloadService } from '../utils/download.service';
+import { HelperDetailsComponent } from '../helper-details/helper-details.component'; // Import the new component
 
 @Component({
   selector: 'app-dashboard',
@@ -26,7 +26,8 @@ import { DownloadService } from '../utils/download.service';
     MatSelectModule,
     MatCheckboxModule,
     MatDialogModule,
-    MatDatepickerModule
+    MatDatepickerModule,
+    HelperDetailsComponent 
   ],
   providers: [provideNativeDateAdapter()],
   templateUrl: './dashboard.component.html',
@@ -47,9 +48,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   servicesList: string[] = SERVICES;
   organizationsList: string[] = ['ASBL', 'Springers Helpers'];
-  pickedDate!:Date;
-
-
+  pickedDate!: Date;
 
   @ViewChild('scrollContainer') scrollContainer!: ElementRef<HTMLDivElement>;
   private scrollSubscription!: Subscription;
@@ -58,7 +57,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading$: Observable<boolean>;
 
   selectedHelper: Helper | null = null;
-
 
   constructor(
     private router: Router,
@@ -71,10 +69,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
-
     this.totalHelpersSubscription = this.helperStore.totalHelpers$.subscribe(count => {
       this.totalHelpersCount = count;
-    })
+    });
 
     this.helpers$.subscribe(helpers => {
       if (this.selectedHelper) {
@@ -104,32 +101,23 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.scrollSubscription = fromEvent(this.scrollContainer.nativeElement, 'scroll').pipe(
       map(event => event.target as HTMLDivElement),
-      filter(target => {
-        return target.scrollTop + target.clientHeight >= target.scrollHeight - 100;
-      }),
-      tap(() => {
-        this.helperStore.loadMore();
-      })
+      filter(target => target.scrollTop + target.clientHeight >= target.scrollHeight - 100),
+      tap(() => this.helperStore.loadMore())
     ).subscribe();
   }
-
 
   onSearchInput(event: any): void {
     this.searchTerm = event;
     this.helperStore.search(this.searchTerm);
   }
 
-  doSomeSorting(key: 'name'|'eCode'): void {
+  doSomeSorting(key: 'name' | 'eCode'): void {
     this.activeSortKey = key;
-    console.log(key);
-
     this.helperStore.sort(this.activeSortKey);
     this.isSortVisible = false;
   }
 
   applyFilters(): void {
-    console.log(this.filterServices.join(","));
-    console.log(this.filterOrganizations.join(","));
     this.helperStore.filter({ services: this.filterServices, orgs: this.filterOrganizations });
     this.isFilterVisible = false;
   }
@@ -154,7 +142,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.filterOrganizations = [];
       this.applyFilters();
     }
-
   }
 
   resetServiceFilter(event: Event): void {
@@ -175,12 +162,9 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-
-  onDateChange(){
-    console.log('picked dat', this.pickedDate);
-    
+  onDateChange() {
+    console.log('picked date', this.pickedDate);
   }
-
 
   editHelper(helper: Helper): void {
     this.router.navigate(['/edit-helper', helper._id]);
@@ -191,7 +175,15 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isDeleteModalVisible = true;
     }
   }
-
+  
+  onDownload(): void {
+    const element = document.getElementById('download-button-tag');
+    if (element) {
+      this.downloadService.captureAndDownload(element, `${this.selectedHelper?.eCode}-${this.selectedHelper?.fullName}-details`);
+    } else {
+      console.error("Download target element not found.");
+    }
+  }
   confirmDelete(): void {
     if (this.selectedHelper?._id) {
       this.helperStore.deleteHelper(this.selectedHelper._id);
@@ -206,31 +198,5 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
 
   navigateDashboard(): void {
     this.router.navigate(['/add-helper']);
-  }
-
-
-
-  viewKyc(helperId: string | undefined): void {
-    if (!helperId) return;
-    this.helperStore.getKycDocument(helperId).subscribe({
-      next: (blob) => {
-        const fileURL = URL.createObjectURL(blob);
-        window.open(fileURL, '_blank');
-      },
-      error: (err) => {
-        console.error('Failed to download KYC doc:', err);
-        alert('Could not retrieve the KYC document.');
-      }
-    });
-  }
-  viewID() {
-    let dialogRef = this.dialog.open(IdCardComponent, {
-      data: this.selectedHelper
-    })
-  }
-  onDownload() {
-    const elementRef = document.getElementById('download-button-tag') as HTMLElement;
-    this.downloadService.captureAndDownload(elementRef, `${this.selectedHelper?.eCode}-
-      ${this.selectedHelper?.fullName}-details`)
   }
 }

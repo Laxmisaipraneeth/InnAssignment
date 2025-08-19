@@ -3,14 +3,16 @@ import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule, MatSelectTrigger } from '@angular/material/select';
+import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { Router } from '@angular/router';
-import { SERVICES, LANGUAGES, COUNTRY_CODES, VEHICLES } from '../constants/data.constants';
+import { SERVICES, LANGUAGES } from '../constants/data.constants';
 import { HelperStoreService } from '../helper-store.service';
+import { Helper } from '../models/helper.model';
+import { HelperDetailsComponent } from '../helper-details/helper-details.component';
 
 type FieldType = 'select' | 'input' | 'radio' | 'conditional-input';
 
@@ -25,13 +27,23 @@ interface FormFieldConfig {
   hasSearch?: boolean;
   inputType?: 'text' | 'tel' | 'email';
   errors?: { type: string; message: string }[];
-  searchLabel?:string;
+  searchLabel?: string;
   condition?: (form: FormGroup) => boolean;
 }
 
 @Component({
   selector: 'app-helper',
-  imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatSelectModule, MatInputModule, MatRadioModule, FormsModule, MatSelectTrigger, MatStepperModule],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule,
+    MatRadioModule,
+    FormsModule,
+    MatStepperModule,
+    HelperDetailsComponent // Import the reusable component
+  ],
   standalone: true,
   templateUrl: './helper.component.html',
   styleUrl: './helper.component.scss',
@@ -44,14 +56,14 @@ export class HelperComponent implements OnInit, OnDestroy {
 
   services: string[] = SERVICES;
   languagesList: string[] = LANGUAGES;
-  countryCodes: string[] = COUNTRY_CODES;
-  vehicles: string[] = VEHICLES;
+  vehicles: string[] = ['None', 'Auto', 'Bike', 'Car', 'Cycle'];
 
   photoFileName: string = '';
-  kycFileName = '';
   selectedKycFile: File | null = null;
   imgSrc: string | null = null;
   serviceSearch: string = '';
+
+  previewHelper: Helper | null = null;
 
   @ViewChild('photoInput') photoInput!: ElementRef<HTMLInputElement>;
   @ViewChild('kycInput') kycInputRef!: ElementRef<HTMLInputElement>;
@@ -59,12 +71,7 @@ export class HelperComponent implements OnInit, OnDestroy {
   languageCountValidator: ValidatorFn = (control: AbstractControl) => {
     const value = control.value;
     if (!Array.isArray(value)) return null;
-
-    const length = value.length;
-    if (length < 1 || length > 3) {
-      return { invalidLanguageCount: true };
-    }
-    return null;
+    return (value.length >= 1 && value.length <= 3) ? null : { invalidLanguageCount: true };
   }
 
   profileForm = new FormGroup({
@@ -72,10 +79,10 @@ export class HelperComponent implements OnInit, OnDestroy {
     serviceType: new FormControl('', Validators.required),
     orgName: new FormControl('', Validators.required),
     fullName: new FormControl('', Validators.required),
-    languages: new FormControl([], [Validators.required, this.languageCountValidator]),
+    languages: new FormControl<string[]>([], [Validators.required, this.languageCountValidator]),
     gender: new FormControl('', Validators.required),
     phone: new FormControl('', [Validators.pattern('[0-9]{10}'), Validators.required]),
-    email: new FormControl('', [Validators.pattern('^[a-zA-z0-9._%+-]+@[a-zA-z0-9._%+-]+\\.[a-zA-Z]{2,}$')]),
+    email: new FormControl('', [Validators.pattern('^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9._%+-]+\\.[a-zA-Z]{2,}$')]),
     vehicleType: new FormControl('None', Validators.required),
     vehicleNumber: new FormControl(''),
     kycDoc: new FormControl<File | null>(null, Validators.required),
@@ -86,7 +93,7 @@ export class HelperComponent implements OnInit, OnDestroy {
   });
 
   formFieldsConfig = signal<FormFieldConfig[]>([
-    { name: 'serviceType', type: 'select', label: 'Type of Service*', formControl: this.profileForm.get('serviceType')!, placeholder: 'Search service', options: this.services, hasSearch: true, errors: [{ type: 'required', message: 'This field is mandatory.' }],searchLabel:'Search for services' },
+    { name: 'serviceType', type: 'select', label: 'Type of Service*', formControl: this.profileForm.get('serviceType')!, placeholder: 'Search service', options: this.services, hasSearch: true, errors: [{ type: 'required', message: 'This field is mandatory.' }], searchLabel: 'Search for services' },
     { name: 'orgName', type: 'select', label: 'Organization Name*', formControl: this.profileForm.get('orgName')!, placeholder: 'Organization Name', options: ['ASBL', 'Springers Helpers'], errors: [{ type: 'required', message: 'This field is mandatory.' }] },
     { name: 'fullName', type: 'input', label: 'Full Name*', formControl: this.profileForm.get('fullName')!, inputType: 'text', placeholder: 'Full Name', errors: [{ type: 'required', message: 'This field is mandatory.' }] },
     { name: 'languages', type: 'select', label: 'Languages*', formControl: this.profileForm.get('languages')!, placeholder: 'Languages', options: this.languagesList, isMultiSelect: true, errors: [{ type: 'invalidLanguageCount', message: 'Select at least 1 and at most 3 languages.' }] },
@@ -97,16 +104,7 @@ export class HelperComponent implements OnInit, OnDestroy {
     { name: 'vehicleNumber', type: 'conditional-input', label: 'Vehicle Number*', formControl: this.profileForm.get('vehicleNumber')!, inputType: 'text', placeholder: 'TG01AB1234', condition: (form) => form.get('vehicleType')?.value !== 'None' },
   ]);
 
-  validateNumber(event: KeyboardEvent): void {
-    if (this.profileForm.get('phone')?.value?.length == 10) return;
-    const isDigit = /^[0-9]$/.test(event.key);
-    if (!isDigit) {
-      event.preventDefault()
-    }
-  }
-
-  ngOnInit(): void {
-  }
+  ngOnInit(): void { }
 
   ngOnDestroy(): void {
     if (this.imgSrc) {
@@ -115,55 +113,81 @@ export class HelperComponent implements OnInit, OnDestroy {
   }
 
   goToDashboard() {
-    this.router.navigate(['dashboard'])
+    this.router.navigate(['dashboard']);
   }
 
   submitForm() {
-    if (this.profileForm.valid && this.additionalFormGroup.valid) {
+    if (this.profileForm.valid) {
       const formData = new FormData();
-      formData.append('fullName', this.profileForm.get('fullName')?.value || '');
-      formData.append('gender', this.profileForm.get('gender')?.value || '');
-      formData.append('phone', this.profileForm.get('phone')?.value || '');
-      formData.append('languages', JSON.stringify(this.profileForm.get('languages')?.value || []));
-      formData.append('email', this.profileForm.get('email')?.value || '');
-      formData.append('serviceType', this.profileForm.get('serviceType')?.value || '');
-      formData.append('orgName', this.profileForm.get('orgName')?.value || '');
-      formData.append('vehicleType', this.profileForm.get('vehicleType')?.value || '');
-      formData.append('vehicleNumber', this.profileForm.get('vehicleNumber')?.value || '');
 
-      const profilePic = this.profileForm.get('profilePic')?.value;
-      if (profilePic) formData.append('profilePic', profilePic);
-
-      const kycDoc = this.profileForm.get('kycDoc')?.value;
-      if (kycDoc) {
-        formData.append('kycDoc', kycDoc);
-        formData.append('kycDocName', kycDoc.name);
-      }
-
-      const otherDocs = this.additionalFormGroup.get('otherDocs')?.value;
-      if (otherDocs) formData.append('otherDocs', otherDocs);
-
-      this.helperStore.addHelper(formData).subscribe({
-        next: (data) => {
-          console.log(data);
-          this.goToDashboard();
-        },
-        error: (err) => {
-          console.error('Error submitting profile:', err);
+      Object.keys(this.profileForm.controls).forEach(key => {
+        const control = this.profileForm.get(key);
+        if (key !== 'profilePic' && key !== 'kycDoc') {
+          if (key === 'languages' && control?.value) {
+            formData.append(key, JSON.stringify(control.value));
+          } else if (control?.value) {
+            formData.append(key, control.value);
+          }
         }
       });
+
+      const profilePicFile = this.profileForm.get('profilePic')?.value;
+      if (profilePicFile) {
+        formData.append('profilePic', profilePicFile);
+      }
+
+      const kycDocFile = this.profileForm.get('kycDoc')?.value;
+      if (kycDocFile) {
+        formData.append('kycDoc', kycDocFile);
+        formData.append('kycDocName', kycDocFile.name);
+      }
+
+      this.helperStore.addHelper(formData).subscribe({
+        next: () => this.goToDashboard(),
+        error: (err) => console.error('Error submitting profile:', err)
+      });
+    } else {
+      this.profileForm.markAllAsTouched();
     }
   }
+
+  goToNextStep(stepper: MatStepper, stage: string) {
+    if (stage === 'first') {
+      if (this.profileForm.valid) {
+        this.previewHelper = {
+          _id: '',
+          eCode: -1,
+          profilePic: this.imgSrc,
+          fullName: this.profileForm.value.fullName || '',
+          gender: this.profileForm.value.gender as any || 'other',
+          phone: this.profileForm.value.phone || '',
+          email: this.profileForm.value.email || '',
+          languages: this.profileForm.value.languages || [],
+          serviceType: this.profileForm.value.serviceType || '',
+          orgName: this.profileForm.value.orgName as any || 'ASBL',
+          vehicleType: this.profileForm.value.vehicleType as any || 'None',
+          vehicleNumber: this.profileForm.value.vehicleNumber || '',
+          kycDocName: this.selectedKycFile?.name || '',
+          joinedDate: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isPreview: true,
+        };
+        stepper.next();
+      } else {
+        this.profileForm.markAllAsTouched();
+      }
+    } else {
+      stepper.next();
+    }
+  }
+
 
   filteredServices(): string[] {
     if (!this.serviceSearch) return this.services;
     return this.services.filter(service =>
       service.toLowerCase().includes(this.serviceSearch.toLowerCase())
     );
-  }
-
-  get selectedLanguages(): string[] {
-    return this.profileForm.get('languages')?.value || [];
   }
 
   onPhotoSelected(event: Event) {
@@ -178,9 +202,11 @@ export class HelperComponent implements OnInit, OnDestroy {
         alert('Invalid file type. Only PNG/JPEG allowed.');
         return;
       }
+      if (this.imgSrc) {
+        URL.revokeObjectURL(this.imgSrc);
+      }
       this.imgSrc = URL.createObjectURL(file);
       this.profileForm.patchValue({ profilePic: file });
-      this.profileForm.get('profilePic')?.updateValueAndValidity();
       this.photoFileName = file.name;
     }
   }
@@ -195,18 +221,11 @@ export class HelperComponent implements OnInit, OnDestroy {
 
   onKycFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
-    if (!file) return;
-
-    const validTypes = ['application/pdf', 'image/png', 'image/jpeg'];
-    if (!validTypes.includes(file.type)) {
-      alert(`${file.name} is not a valid file type`);
-      return;
+    if (file) {
+      this.selectedKycFile = file;
+      this.profileForm.patchValue({ kycDoc: file });
+      this.profileForm.get('kycDoc')?.markAsTouched();
     }
-    this.kycFileName = file.name;
-    this.selectedKycFile = file;
-    this.profileForm.get('kycDoc')?.setValue(file);
-    this.profileForm.get('kycDoc')?.markAsTouched();
-    this.kycInputRef.nativeElement.value = '';
   }
 
   previewKycFile(event: Event): void {
@@ -218,18 +237,6 @@ export class HelperComponent implements OnInit, OnDestroy {
     }
   }
 
-  goToNextStep(stepper: MatStepper, stage: string) {
-    if (stage == 'first') {
-      if (this.profileForm.valid) {
-        stepper.next();
-      } else {
-        this.profileForm.markAllAsTouched();
-      }
-    } else {
-      stepper.next();
-    }
-  }
-
   formatFileSize(bytes: number, decimals = 2): string {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -237,5 +244,17 @@ export class HelperComponent implements OnInit, OnDestroy {
     const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+  }
+
+  validateNumber(event: KeyboardEvent): void {
+    const phoneControl = this.profileForm.get('phone');
+    if (phoneControl?.value && phoneControl.value.length >= 10) {
+      event.preventDefault();
+      return;
+    }
+    const isDigit = /^[0-9]$/.test(event.key);
+    if (!isDigit) {
+      event.preventDefault();
+    }
   }
 }
