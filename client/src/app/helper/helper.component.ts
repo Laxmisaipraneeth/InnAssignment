@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, signal, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormGroup, FormControl, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -10,8 +10,24 @@ import { FormsModule } from '@angular/forms';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { Router } from '@angular/router';
 import { SERVICES, LANGUAGES, COUNTRY_CODES, VEHICLES } from '../constants/data.constants';
-
 import { HelperStoreService } from '../helper-store.service';
+
+type FieldType = 'select' | 'input' | 'radio' | 'conditional-input';
+
+interface FormFieldConfig {
+  name: string;
+  type: FieldType;
+  label: string;
+  formControl: AbstractControl;
+  placeholder?: string;
+  options?: string[];
+  isMultiSelect?: boolean;
+  hasSearch?: boolean;
+  inputType?: 'text' | 'tel' | 'email';
+  errors?: { type: string; message: string }[];
+  searchLabel?:string;
+  condition?: (form: FormGroup) => boolean;
+}
 
 @Component({
   selector: 'app-helper',
@@ -69,6 +85,18 @@ export class HelperComponent implements OnInit, OnDestroy {
     otherDocs: new FormControl<File | null>(null)
   });
 
+  formFieldsConfig = signal<FormFieldConfig[]>([
+    { name: 'serviceType', type: 'select', label: 'Type of Service*', formControl: this.profileForm.get('serviceType')!, placeholder: 'Search service', options: this.services, hasSearch: true, errors: [{ type: 'required', message: 'This field is mandatory.' }],searchLabel:'Search for services' },
+    { name: 'orgName', type: 'select', label: 'Organization Name*', formControl: this.profileForm.get('orgName')!, placeholder: 'Organization Name', options: ['ASBL', 'Springers Helpers'], errors: [{ type: 'required', message: 'This field is mandatory.' }] },
+    { name: 'fullName', type: 'input', label: 'Full Name*', formControl: this.profileForm.get('fullName')!, inputType: 'text', placeholder: 'Full Name', errors: [{ type: 'required', message: 'This field is mandatory.' }] },
+    { name: 'languages', type: 'select', label: 'Languages*', formControl: this.profileForm.get('languages')!, placeholder: 'Languages', options: this.languagesList, isMultiSelect: true, errors: [{ type: 'invalidLanguageCount', message: 'Select at least 1 and at most 3 languages.' }] },
+    { name: 'gender', type: 'radio', label: 'Gender*', formControl: this.profileForm.get('gender')!, options: ['Male', 'Female', 'Other'], errors: [{ type: 'required', message: 'Please select a gender.' }] },
+    { name: 'phone', type: 'input', label: 'Phone*', formControl: this.profileForm.get('phone')!, inputType: 'tel', placeholder: '', errors: [{ type: 'required', message: 'This field is mandatory.' }, { type: 'pattern', message: 'Please enter a valid 10-digit number.' }] },
+    { name: 'email', type: 'input', label: 'Email', formControl: this.profileForm.get('email')!, inputType: 'email', placeholder: 'example@abc.com', errors: [{ type: 'pattern', message: 'Please enter a valid email.' }] },
+    { name: 'vehicleType', type: 'select', label: 'Choose Vehicle Type', formControl: this.profileForm.get('vehicleType')!, placeholder: 'None', options: this.vehicles },
+    { name: 'vehicleNumber', type: 'conditional-input', label: 'Vehicle Number*', formControl: this.profileForm.get('vehicleNumber')!, inputType: 'text', placeholder: 'TG01AB1234', condition: (form) => form.get('vehicleType')?.value !== 'None' },
+  ]);
+
   validateNumber(event: KeyboardEvent): void {
     if (this.profileForm.get('phone')?.value?.length == 10) return;
     const isDigit = /^[0-9]$/.test(event.key);
@@ -115,7 +143,6 @@ export class HelperComponent implements OnInit, OnDestroy {
       const otherDocs = this.additionalFormGroup.get('otherDocs')?.value;
       if (otherDocs) formData.append('otherDocs', otherDocs);
 
-
       this.helperStore.addHelper(formData).subscribe({
         next: (data) => {
           console.log(data);
@@ -125,7 +152,6 @@ export class HelperComponent implements OnInit, OnDestroy {
           console.error('Error submitting profile:', err);
         }
       });
-
     }
   }
 
